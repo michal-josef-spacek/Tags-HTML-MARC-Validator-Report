@@ -16,6 +16,7 @@ MANIFEST			This list of files
 META.yml
 README
 Report.pm
+SIGNATURE
 t/Tags-HTML-MARC-Validator-Report/01-use.t
 t/Tags-HTML-MARC-Validator-Report/02-version.t
 xt/Tags-HTML-MARC-Validator-Report/01-pod_coverage.t
