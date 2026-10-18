@@ -21,6 +21,7 @@ requires 'Class::Utils' => 0.02;
 requires 'Error::Pure' => 0.07;
 requires 'Scalar::Util' => 0;
 requires 'Tags::HTML' => 0;
+requires 'Unicode::UTF8' => 0;
 requires 'perl' => '5.8.0';
 resources 'bugtracker' => 'https://github.com/michal-josef-spacek/Tags-HTML-MARC-Validator-Report/issues';
 resources 'homepage' => 'https://github.com/michal-josef-spacek/Tags-HTML-MARC-Validator-Report';
