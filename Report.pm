@@ -125,130 +125,6 @@ sub _process {
 	return;
 }
 
-sub _tags_plugin {
-	my ($self, $plugin) = @_;
-
-	my $id = $plugin->name;
-	$id =~ s/[^A-Za-z0-9_-]+/_/g;
-	my @plugin_errors = @{$plugin->plugin_errors};
-	my ($error_count, $record_count) = (0, scalar @plugin_errors);
-	$error_count += scalar @{$_->errors} for @plugin_errors;
-
-	$self->{'tags'}->put(
-		['b', 'details'],
-		['a', 'class', 'panel plugin'],
-		['a', 'id', $id],
-	);
-	$self->{'tags'}->put(
-		['a', 'open', 'open'],
-	) if @plugin_errors;
-	$self->{'tags'}->put(
-		['b', 'summary'],
-		['b', 'div'],
-		['b', 'div'],
-		['a', 'class', 'plugin-title'],
-		['b', 'h2'],
-		['d', $plugin->name],
-		['e', 'h2'],
-		['b', 'span'],
-		['a', 'class', 'badge'],
-		['d', $error_count.' '.decode_utf8('chyb')],
-		['e', 'span'],
-		['b', 'span'],
-		['a', 'class', 'badge'],
-		['d', $record_count.' '.decode_utf8('záznamů')],
-		['e', 'span'],
-		['e', 'div'],
-		['b', 'div'],
-		['a', 'class', 'module'],
-		['d', $plugin->module_name.' '.decode_utf8('·').' v'.$plugin->version
-			.' '.decode_utf8('·').' '.$self->{'_report'}->datetime],
-		['e', 'div'],
-		['e', 'div'],
-		['b', 'span'],
-		['a', 'aria-hidden', 'true'],
-		['d', decode_utf8('▾')],
-		['e', 'span'],
-		['e', 'summary'],
-		['b', 'div'],
-		['a', 'class', 'records'],
-	);
-
-	foreach my $plugin_errors (@plugin_errors) {
-		$self->_tags_record($plugin_errors);
-	}
-
-	if (! @plugin_errors) {
-		$self->{'tags'}->put(
-			['b', 'div'],
-			['a', 'class', 'empty'],
-			['d', decode_utf8('Bez chyb.')],
-			['e', 'div'],
-		);
-	}
-
-	$self->{'tags'}->put(
-		['e', 'div'],
-		['e', 'details'],
-	);
-
-	return;
-}
-
-sub _tags_record {
-	my ($self, $plugin_errors) = @_;
-	my $record_id = $plugin_errors->record_id;
-	my @errors = @{$plugin_errors->errors};
-
-	my $record_anchor = $record_id;
-	$record_anchor =~ s/[^A-Za-z0-9_-]+/_/g;
-	$self->{'tags'}->put(
-		['b', 'article'], ['a', 'class', 'record'], ['a', 'id', 'record-'.$record_anchor],
-		['b', 'div'], ['a', 'class', 'record-header'],
-		['b', 'span'], ['a', 'class', 'record-id'], ['d', $record_id], ['e', 'span'],
-		['b', 'span'], ['a', 'class', 'badge'],
-		['d', scalar(@errors).decode_utf8('×')], ['e', 'span'],
-		['e', 'div'],
-		['b', 'div'], ['a', 'class', 'issues'],
-	);
-
-	foreach my $error (@errors) {
-		$self->{'tags'}->put(
-			['b', 'section'], ['a', 'class', 'issue'],
-			['b', 'div'], ['a', 'class', 'issue-title'],
-			['d', $error->error], ['e', 'div'],
-			['b', 'div'], ['a', 'class', 'params'],
-		);
-		my $params = $error->params;
-		if (keys %{$params}) {
-			foreach my $key (sort keys %{$params}) {
-				$self->{'tags'}->put(
-					['b', 'span'], ['a', 'class', 'param'],
-					['b', 'b'], ['d', $key], ['e', 'b'],
-					['d', ': '], ['b', 'code'],
-					['d', defined $params->{$key} ? $params->{$key} : ''], ['e', 'code'],
-					['e', 'span'],
-				);
-			}
-		} else {
-			$self->{'tags'}->put(
-				['b', 'span'], ['a', 'class', 'param'],
-				['d', decode_utf8('bez parametrů')], ['e', 'span'],
-			);
-		}
-		$self->{'tags'}->put(
-			['e', 'div'],
-			['e', 'section'],
-		);
-	}
-
-	$self->{'tags'}->put(
-		['e', 'div'], ['e', 'article'],
-	);
-
-	return;
-}
-
 sub _process_css {
 	my $self = shift;
 
@@ -465,6 +341,130 @@ sub _tags_article {
 		['d', $title],
 		['e', 'span'],
 		['e', 'article'],
+	);
+
+	return;
+}
+
+sub _tags_plugin {
+	my ($self, $plugin) = @_;
+
+	my $id = $plugin->name;
+	$id =~ s/[^A-Za-z0-9_-]+/_/g;
+	my @plugin_errors = @{$plugin->plugin_errors};
+	my ($error_count, $record_count) = (0, scalar @plugin_errors);
+	$error_count += scalar @{$_->errors} for @plugin_errors;
+
+	$self->{'tags'}->put(
+		['b', 'details'],
+		['a', 'class', 'panel plugin'],
+		['a', 'id', $id],
+	);
+	$self->{'tags'}->put(
+		['a', 'open', 'open'],
+	) if @plugin_errors;
+	$self->{'tags'}->put(
+		['b', 'summary'],
+		['b', 'div'],
+		['b', 'div'],
+		['a', 'class', 'plugin-title'],
+		['b', 'h2'],
+		['d', $plugin->name],
+		['e', 'h2'],
+		['b', 'span'],
+		['a', 'class', 'badge'],
+		['d', $error_count.' '.decode_utf8('chyb')],
+		['e', 'span'],
+		['b', 'span'],
+		['a', 'class', 'badge'],
+		['d', $record_count.' '.decode_utf8('záznamů')],
+		['e', 'span'],
+		['e', 'div'],
+		['b', 'div'],
+		['a', 'class', 'module'],
+		['d', $plugin->module_name.' '.decode_utf8('·').' v'.$plugin->version
+			.' '.decode_utf8('·').' '.$self->{'_report'}->datetime],
+		['e', 'div'],
+		['e', 'div'],
+		['b', 'span'],
+		['a', 'aria-hidden', 'true'],
+		['d', decode_utf8('▾')],
+		['e', 'span'],
+		['e', 'summary'],
+		['b', 'div'],
+		['a', 'class', 'records'],
+	);
+
+	foreach my $plugin_errors (@plugin_errors) {
+		$self->_tags_record($plugin_errors);
+	}
+
+	if (! @plugin_errors) {
+		$self->{'tags'}->put(
+			['b', 'div'],
+			['a', 'class', 'empty'],
+			['d', decode_utf8('Bez chyb.')],
+			['e', 'div'],
+		);
+	}
+
+	$self->{'tags'}->put(
+		['e', 'div'],
+		['e', 'details'],
+	);
+
+	return;
+}
+
+sub _tags_record {
+	my ($self, $plugin_errors) = @_;
+	my $record_id = $plugin_errors->record_id;
+	my @errors = @{$plugin_errors->errors};
+
+	my $record_anchor = $record_id;
+	$record_anchor =~ s/[^A-Za-z0-9_-]+/_/g;
+	$self->{'tags'}->put(
+		['b', 'article'], ['a', 'class', 'record'], ['a', 'id', 'record-'.$record_anchor],
+		['b', 'div'], ['a', 'class', 'record-header'],
+		['b', 'span'], ['a', 'class', 'record-id'], ['d', $record_id], ['e', 'span'],
+		['b', 'span'], ['a', 'class', 'badge'],
+		['d', scalar(@errors).decode_utf8('×')], ['e', 'span'],
+		['e', 'div'],
+		['b', 'div'], ['a', 'class', 'issues'],
+	);
+
+	foreach my $error (@errors) {
+		$self->{'tags'}->put(
+			['b', 'section'], ['a', 'class', 'issue'],
+			['b', 'div'], ['a', 'class', 'issue-title'],
+			['d', $error->error], ['e', 'div'],
+			['b', 'div'], ['a', 'class', 'params'],
+		);
+		my $params = $error->params;
+		if (keys %{$params}) {
+			foreach my $key (sort keys %{$params}) {
+				$self->{'tags'}->put(
+					['b', 'span'], ['a', 'class', 'param'],
+					['b', 'b'], ['d', $key], ['e', 'b'],
+					['d', ': '], ['b', 'code'],
+					['d', defined $params->{$key} ? $params->{$key} : ''], ['e', 'code'],
+					['e', 'span'],
+				);
+			}
+		} else {
+			$self->{'tags'}->put(
+				['b', 'span'], ['a', 'class', 'param'],
+				['d', decode_utf8('bez parametrů')], ['e', 'span'],
+			);
+		}
+		$self->{'tags'}->put(
+			['e', 'div'],
+			['e', 'section'],
+		);
+	}
+
+	$self->{'tags'}->put(
+		['e', 'div'], ['e', 'article'],
 	);
 
 	return;
