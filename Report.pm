@@ -68,6 +68,7 @@ sub _process {
 
 	my $report = $self->{'_report'};
 	my @plugins = @{$report->plugins};
+	my @plugins_with_errors;
 	my ($plugins_with_errors, $records, $error_count) = (0, {}, 0);
 	foreach my $plugin (@plugins) {
 		my $plugin_error_count = 0;
@@ -76,7 +77,10 @@ sub _process {
 			$plugin_error_count += scalar @{$plugin_errors->errors};
 			$error_count += scalar @{$plugin_errors->errors};
 		}
-		$plugins_with_errors++ if $plugin_error_count;
+		if ($plugin_error_count) {
+			$plugins_with_errors++;
+			push @plugins_with_errors, $plugin;
+		}
 	}
 
 	$self->{'tags'}->put(
@@ -96,15 +100,15 @@ sub _process {
 		['a', 'class', 'plugin-list'],
 	);
 
-	foreach my $plugin (@plugins) {
+	foreach my $plugin (@plugins_with_errors) {
 		$self->_tags_plugin($plugin);
 	}
 
-	if (! @plugins) {
+	if (! @plugins_with_errors) {
 		$self->{'tags'}->put(
 			['b', 'div'],
 			['a', 'class', 'panel empty'],
-			['d', decode_utf8('Report neobsahuje žádné pluginy.')],
+			['d', decode_utf8('Celý report je bez chyb.')],
 			['e', 'div'],
 		);
 	}
