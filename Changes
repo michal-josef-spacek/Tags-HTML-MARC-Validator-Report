@@ -1,4 +1,4 @@
-0.02
+0.02 2026-10-18T21:41:09+02:00
  - Add test for constructor.
  - Fix visibility of value like '   '.
  - Remove empty params string.
