@@ -393,9 +393,11 @@ sub _tags_plugin {
 		['a', 'class', 'panel plugin'],
 		['a', 'id', $id],
 	);
-	$self->{'tags'}->put(
-		['a', 'open', 'open'],
-	) if @plugin_errors;
+	if (@plugin_errors) {
+		$self->{'tags'}->put(
+			['a', 'open', 'open'],
+		);
+	}
 	$self->{'tags'}->put(
 		['b', 'summary'],
 		['b', 'div'],
@@ -457,43 +459,67 @@ sub _tags_record {
 	my $record_anchor = $record_id;
 	$record_anchor =~ s/[^A-Za-z0-9_-]+/_/g;
 	$self->{'tags'}->put(
-		['b', 'article'], ['a', 'class', 'record'], ['a', 'id', 'record-'.$record_anchor],
-		['b', 'div'], ['a', 'class', 'record-header'],
-		['b', 'span'], ['a', 'class', 'record-id'], ['d', $record_id], ['e', 'span'],
-		['b', 'span'], ['a', 'class', 'badge'],
-		['d', scalar(@errors).decode_utf8('×')], ['e', 'span'],
+		['b', 'article'],
+		['a', 'class', 'record'],
+		['a', 'id', 'record-'.$record_anchor],
+		['b', 'div'],
+		['a', 'class', 'record-header'],
+		['b', 'span'],
+		['a', 'class', 'record-id'],
+		['d', $record_id],
+		['e', 'span'],
+		['b', 'span'],
+		['a', 'class', 'badge'],
+		['d', scalar(@errors).decode_utf8('×')],
+		['e', 'span'],
 		['e', 'div'],
-		['b', 'div'], ['a', 'class', 'issues'],
+		['b', 'div'],
+		['a', 'class', 'issues'],
 	);
 
 	foreach my $error (@errors) {
 		$self->{'tags'}->put(
-			['b', 'section'], ['a', 'class', 'issue'],
-			['b', 'div'], ['a', 'class', 'issue-title'],
-			['d', $error->error], ['e', 'div'],
-			['b', 'div'], ['a', 'class', 'params'],
+			['b', 'section'],
+			['a', 'class', 'issue'],
+			['b', 'div'],
+			['a', 'class', 'issue-title'],
+			['d', $error->error],
+			['e', 'div'],
+			['b', 'div'],
+			['a', 'class', 'params'],
 		);
 		my $params = $error->params;
 		if (keys %{$params}) {
 			foreach my $key (sort keys %{$params}) {
 				$self->{'tags'}->put(
-					['b', 'span'], ['a', 'class', 'param'],
-					['b', 'span'], ['a', 'class', 'param-key'],
-					['b', 'b'], ['d', $key], ['e', 'b'],
+					['b', 'span'],
+					['a', 'class', 'param'],
+					['b', 'span'],
+					['a', 'class', 'param-key'],
+					['b', 'b'],
+					['d', $key],
+					['e', 'b'],
 					['e', 'span'],
-					['b', 'span'], ['a', 'class', 'param-separator'],
-					['d', ':'], ['e', 'span'],
-					['b', 'code'], ['a', 'class', 'param-value'],
-					['b', 'span'], ['a', 'class', 'param-value-text'],
+					['b', 'span'],
+					['a', 'class', 'param-separator'],
+					['d', ':'],
+					['e', 'span'],
+					['b', 'code'],
+					['a', 'class', 'param-value'],
+					['b', 'span'],
+					['a', 'class', 'param-value-text'],
 					['r', $self->_html_param_value($params->{$key})],
-					['e', 'span'], ['e', 'code'],
+					['e', 'span'],
+					['e', 'code'],
 					['e', 'span'],
 				);
 			}
 		} else {
 			$self->{'tags'}->put(
-				['b', 'div'], ['a', 'class', 'param-empty'],
-				['d', decode_utf8('bez parametrů')], ['e', 'div'],
+				['b', 'div'],
+				['a', 'class', 'param-empty'],
+				['d', decode_utf8('bez parametrů')],
+				['e', 'div'],
 			);
 		}
 		$self->{'tags'}->put(
@@ -503,7 +529,8 @@ sub _tags_record {
 	}
 
 	$self->{'tags'}->put(
-		['e', 'div'], ['e', 'article'],
+		['e', 'div'],
+		['e', 'article'],
 	);
 
 	return;
