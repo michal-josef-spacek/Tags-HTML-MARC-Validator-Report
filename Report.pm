@@ -83,7 +83,7 @@ sub _process {
 		['b', 'section'],
 		['a', 'class', 'stats'],
 	);
-	$self->_tags_article(scalar @plugins, decode_utf8('validovaných pluginů'));
+	$self->_tags_article(scalar @plugins, decode_utf8('validačních pluginů'));
 	$self->_tags_article($plugins_with_errors, decode_utf8('pluginů s chybou'));
 	$self->_tags_article(scalar keys %{$records}, decode_utf8('zasažených záznamů'));
 	$self->_tags_article($error_count, decode_utf8('celkem chyb'));
