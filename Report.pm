@@ -7,6 +7,7 @@ use warnings;
 use Class::Utils qw(set_params split_params);
 use Error::Pure qw(err);
 use Scalar::Util qw(blessed);
+use Unicode::UTF8 qw(decode_utf8);
 
 our $VERSION = 0.01;
 
