@@ -1,4 +1,5 @@
 0.02
+ - Add test for constructor.
  - Fix visibility of value like '   '.
  - Update author email.
 
