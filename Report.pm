@@ -302,7 +302,8 @@ sub _process_css {
 
 		['s', $class.' .params'],
 		['d', 'display', 'flex'],
-		['d', 'flex-wrap', 'wrap'],
+		['d', 'flex-direction', 'column'],
+		['d', 'align-items', 'flex-start'],
 		['d', 'gap', '7px'],
 		['e'],
 
