@@ -127,6 +127,7 @@ sub _process {
 
 sub _tags_plugin {
 	my ($self, $plugin) = @_;
+
 	my $id = $plugin->name;
 	$id =~ s/[^A-Za-z0-9_-]+/_/g;
 	my @plugin_errors = @{$plugin->plugin_errors};
@@ -146,19 +147,31 @@ sub _tags_plugin {
 		['b', 'div'],
 		['b', 'div'],
 		['a', 'class', 'plugin-title'],
-		['b', 'h2'], ['d', $plugin->name], ['e', 'h2'],
-		['b', 'span'], ['a', 'class', 'badge'],
-		['d', $error_count.' '.decode_utf8('chyb')], ['e', 'span'],
-		['b', 'span'], ['a', 'class', 'badge'],
-		['d', $record_count.' '.decode_utf8('záznamů')], ['e', 'span'],
+		['b', 'h2'],
+		['d', $plugin->name],
+		['e', 'h2'],
+		['b', 'span'],
+		['a', 'class', 'badge'],
+		['d', $error_count.' '.decode_utf8('chyb')],
+		['e', 'span'],
+		['b', 'span'],
+		['a', 'class', 'badge'],
+		['d', $record_count.' '.decode_utf8('záznamů')],
+		['e', 'span'],
 		['e', 'div'],
-		['b', 'div'], ['a', 'class', 'module'],
+		['b', 'div'],
+		['a', 'class', 'module'],
 		['d', $plugin->module_name.' '.decode_utf8('·').' v'.$plugin->version
-			.' '.decode_utf8('·').' '.$self->{'_report'}->datetime], ['e', 'div'],
+			.' '.decode_utf8('·').' '.$self->{'_report'}->datetime],
 		['e', 'div'],
-		['b', 'span'], ['a', 'aria-hidden', 'true'], ['d', decode_utf8('▾')], ['e', 'span'],
+		['e', 'div'],
+		['b', 'span'],
+		['a', 'aria-hidden', 'true'],
+		['d', decode_utf8('▾')],
+		['e', 'span'],
 		['e', 'summary'],
-		['b', 'div'], ['a', 'class', 'records'],
+		['b', 'div'],
+		['a', 'class', 'records'],
 	);
 
 	foreach my $plugin_errors (@plugin_errors) {
@@ -167,8 +180,10 @@ sub _tags_plugin {
 
 	if (! @plugin_errors) {
 		$self->{'tags'}->put(
-			['b', 'div'], ['a', 'class', 'empty'],
-			['d', decode_utf8('Bez chyb.')], ['e', 'div'],
+			['b', 'div'],
+			['a', 'class', 'empty'],
+			['d', decode_utf8('Bez chyb.')],
+			['e', 'div'],
 		);
 	}
 
