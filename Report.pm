@@ -66,27 +66,165 @@ sub _process {
 		['a', 'class', $self->{'css_class'}],
 	);
 
+	my $report = $self->{'_report'};
+	my @plugins = @{$report->plugins};
+	my ($plugins_with_errors, $records, $error_count) = (0, {}, 0);
+	foreach my $plugin (@plugins) {
+		my $plugin_error_count = 0;
+		foreach my $plugin_errors (@{$plugin->plugin_errors}) {
+			$records->{$plugin_errors->record_id} = 1;
+			$plugin_error_count += scalar @{$plugin_errors->errors};
+			$error_count += scalar @{$plugin_errors->errors};
+		}
+		$plugins_with_errors++ if $plugin_error_count;
+	}
+
 	$self->{'tags'}->put(
 		['b', 'section'],
+		['a', 'class', 'stats'],
 	);
-	$self->_tags_article(12, decode_utf8('validovaných pluginů'));
-	$self->_tags_article(8, decode_utf8('pluginů s chybou'));
-	$self->_tags_article(36, decode_utf8('zasažených záznamů'));
-	$self->_tags_article(72, decode_utf8('celkem chyb'));
+	$self->_tags_article(scalar @plugins, decode_utf8('validovaných pluginů'));
+	$self->_tags_article($plugins_with_errors, decode_utf8('pluginů s chybou'));
+	$self->_tags_article(scalar keys %{$records}, decode_utf8('zasažených záznamů'));
+	$self->_tags_article($error_count, decode_utf8('celkem chyb'));
 	$self->{'tags'}->put(
 		['e', 'section'],
+
+		['b', 'section'],
+		['a', 'class', 'content-grid'],
+		['b', 'div'],
+		['a', 'class', 'plugin-list'],
 	);
 
-	# TODO
+	foreach my $plugin (@plugins) {
+		$self->_tags_plugin($plugin);
+	}
 
-	$self->{'tags'}->put(
-		# TODO Div with plugin checkboxes on the right page.
-	);
-
-	# TODO
+	if (! @plugins) {
+		$self->{'tags'}->put(
+			['b', 'div'],
+			['a', 'class', 'panel empty'],
+			['d', decode_utf8('Report neobsahuje žádné pluginy.')],
+			['e', 'div'],
+		);
+	}
 
 	$self->{'tags'}->put(
 		['e', 'div'],
+		['e', 'section'],
+	);
+
+	$self->{'tags'}->put(
+		['e', 'div'],
+	);
+
+	return;
+}
+
+sub _tags_plugin {
+	my ($self, $plugin) = @_;
+	my $id = $plugin->name;
+	$id =~ s/[^A-Za-z0-9_-]+/_/g;
+	my @plugin_errors = @{$plugin->plugin_errors};
+	my ($error_count, $record_count) = (0, scalar @plugin_errors);
+	$error_count += scalar @{$_->errors} for @plugin_errors;
+
+	$self->{'tags'}->put(
+		['b', 'details'],
+		['a', 'class', 'panel plugin'],
+		['a', 'id', $id],
+	);
+	$self->{'tags'}->put(
+		['a', 'open', 'open'],
+	) if @plugin_errors;
+	$self->{'tags'}->put(
+		['b', 'summary'],
+		['b', 'div'],
+		['b', 'div'],
+		['a', 'class', 'plugin-title'],
+		['b', 'h2'], ['d', $plugin->name], ['e', 'h2'],
+		['b', 'span'], ['a', 'class', 'badge'],
+		['d', $error_count.' '.decode_utf8('chyb')], ['e', 'span'],
+		['b', 'span'], ['a', 'class', 'badge'],
+		['d', $record_count.' '.decode_utf8('záznamů')], ['e', 'span'],
+		['e', 'div'],
+		['b', 'div'], ['a', 'class', 'module'],
+		['d', $plugin->module_name.' '.decode_utf8('·').' v'.$plugin->version
+			.' '.decode_utf8('·').' '.$self->{'_report'}->datetime], ['e', 'div'],
+		['e', 'div'],
+		['b', 'span'], ['a', 'aria-hidden', 'true'], ['d', decode_utf8('▾')], ['e', 'span'],
+		['e', 'summary'],
+		['b', 'div'], ['a', 'class', 'records'],
+	);
+
+	foreach my $plugin_errors (@plugin_errors) {
+		$self->_tags_record($plugin_errors);
+	}
+
+	if (! @plugin_errors) {
+		$self->{'tags'}->put(
+			['b', 'div'], ['a', 'class', 'empty'],
+			['d', decode_utf8('Bez chyb.')], ['e', 'div'],
+		);
+	}
+
+	$self->{'tags'}->put(
+		['e', 'div'],
+		['e', 'details'],
+	);
+
+	return;
+}
+
+sub _tags_record {
+	my ($self, $plugin_errors) = @_;
+	my $record_id = $plugin_errors->record_id;
+	my @errors = @{$plugin_errors->errors};
+
+	my $record_anchor = $record_id;
+	$record_anchor =~ s/[^A-Za-z0-9_-]+/_/g;
+	$self->{'tags'}->put(
+		['b', 'article'], ['a', 'class', 'record'], ['a', 'id', 'record-'.$record_anchor],
+		['b', 'div'], ['a', 'class', 'record-header'],
+		['b', 'span'], ['a', 'class', 'record-id'], ['d', $record_id], ['e', 'span'],
+		['b', 'span'], ['a', 'class', 'badge'],
+		['d', scalar(@errors).decode_utf8('×')], ['e', 'span'],
+		['e', 'div'],
+		['b', 'div'], ['a', 'class', 'issues'],
+	);
+
+	foreach my $error (@errors) {
+		$self->{'tags'}->put(
+			['b', 'section'], ['a', 'class', 'issue'],
+			['b', 'div'], ['a', 'class', 'issue-title'],
+			['d', $error->error], ['e', 'div'],
+			['b', 'div'], ['a', 'class', 'params'],
+		);
+		my $params = $error->params;
+		if (keys %{$params}) {
+			foreach my $key (sort keys %{$params}) {
+				$self->{'tags'}->put(
+					['b', 'span'], ['a', 'class', 'param'],
+					['b', 'b'], ['d', $key], ['e', 'b'],
+					['d', ': '], ['b', 'code'],
+					['d', defined $params->{$key} ? $params->{$key} : ''], ['e', 'code'],
+					['e', 'span'],
+				);
+			}
+		} else {
+			$self->{'tags'}->put(
+				['b', 'span'], ['a', 'class', 'param'],
+				['d', decode_utf8('bez parametrů')], ['e', 'span'],
+			);
+		}
+		$self->{'tags'}->put(
+			['e', 'div'],
+			['e', 'section'],
+		);
+	}
+
+	$self->{'tags'}->put(
+		['e', 'div'], ['e', 'article'],
 	);
 
 	return;
@@ -442,7 +580,6 @@ sub _tags_article {
 	my ($self, $number, $title) = @_;
 
 	$self->{'tags'}->put(
-		['b', 'section'],
 		['b', 'article'],
 		['a', 'class', 'panel stat'],
 		['b', 'strong'],
@@ -452,7 +589,6 @@ sub _tags_article {
 		['d', $title],
 		['e', 'span'],
 		['e', 'article'],
-		['e', 'section'],
 	);
 
 	return;
