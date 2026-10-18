@@ -308,13 +308,46 @@ sub _process_css {
 
 		['s', $class.' .param'],
 		['d', 'max-width', '100%'],
+		['d', 'display', 'inline-flex'],
+		['d', 'align-items', 'center'],
+		['d', 'gap', '4px'],
+		['d', 'font-family', 'ui-monospace,SFMono-Regular,Menlo,Consolas,monospace'],
+		['d', 'font-size', '12px'],
+		['d', 'color', '#334155'],
+		['d', 'overflow-wrap', 'anywhere'],
+		['e'],
+
+		['s', $class.' .param-key'],
+		['d', 'border-radius', '10px'],
+		['d', 'background', '#f1f5f9'],
+		['d', 'padding', '6px 8px'],
+		['e'],
+
+		['s', $class.' .param-separator'],
+		['d', 'padding', '0 1px'],
+		['e'],
+
+		['s', $class.' .param-value'],
+		['d', 'font-size', '0'],
+		['d', 'display', 'inline-block'],
+		['d', 'border-radius', '10px'],
+		['d', 'background', '#f1f5f9'],
+		['d', 'padding', '6px 8px'],
+		['e'],
+
+		['s', $class.' .param-value-text'],
+		['d', 'font-family', 'inherit'],
+		['d', 'font-size', '12px'],
+		['d', 'white-space', 'nowrap'],
+		['e'],
+
+		['s', $class.' .param-empty'],
 		['d', 'border-radius', '10px'],
 		['d', 'background', '#f1f5f9'],
 		['d', 'padding', '6px 8px'],
 		['d', 'font-family', 'ui-monospace,SFMono-Regular,Menlo,Consolas,monospace'],
 		['d', 'font-size', '12px'],
 		['d', 'color', '#334155'],
-		['d', 'overflow-wrap', 'anywhere'],
 		['e'],
 
 		['s', $class.' .empty'],
@@ -445,16 +478,22 @@ sub _tags_record {
 			foreach my $key (sort keys %{$params}) {
 				$self->{'tags'}->put(
 					['b', 'span'], ['a', 'class', 'param'],
+					['b', 'span'], ['a', 'class', 'param-key'],
 					['b', 'b'], ['d', $key], ['e', 'b'],
-					['d', ': '], ['b', 'code'],
-					['d', defined $params->{$key} ? $params->{$key} : ''], ['e', 'code'],
+					['e', 'span'],
+					['b', 'span'], ['a', 'class', 'param-separator'],
+					['d', ':'], ['e', 'span'],
+					['b', 'code'], ['a', 'class', 'param-value'],
+					['b', 'span'], ['a', 'class', 'param-value-text'],
+					['r', $self->_html_param_value($params->{$key})],
+					['e', 'span'], ['e', 'code'],
 					['e', 'span'],
 				);
 			}
 		} else {
 			$self->{'tags'}->put(
-				['b', 'span'], ['a', 'class', 'param'],
-				['d', decode_utf8('bez parametrů')], ['e', 'span'],
+				['b', 'div'], ['a', 'class', 'param-empty'],
+				['d', decode_utf8('bez parametrů')], ['e', 'div'],
 			);
 		}
 		$self->{'tags'}->put(
@@ -468,6 +507,21 @@ sub _tags_record {
 	);
 
 	return;
+}
+
+sub _html_param_value {
+	my ($self, $value) = @_;
+
+	$value = '' if ! defined $value;
+	$value =~ s/&/&amp;/g;
+	$value =~ s/</&lt;/g;
+	$value =~ s/>/&gt;/g;
+	$value =~ s/ /&nbsp;/g;
+	$value =~ s/\t/&#9;/g;
+	$value =~ s/\r/&#13;/g;
+	$value =~ s/\n/&#10;/g;
+
+	return $value;
 }
 
 1;
