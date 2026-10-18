@@ -341,15 +341,6 @@ sub _process_css {
 		['d', 'white-space', 'nowrap'],
 		['e'],
 
-		['s', $class.' .param-empty'],
-		['d', 'border-radius', '10px'],
-		['d', 'background', '#f1f5f9'],
-		['d', 'padding', '6px 8px'],
-		['d', 'font-family', 'ui-monospace,SFMono-Regular,Menlo,Consolas,monospace'],
-		['d', 'font-size', '12px'],
-		['d', 'color', '#334155'],
-		['e'],
-
 		['s', $class.' .empty'],
 		['d', 'padding', '26px'],
 		['d', 'text-align', 'center'],
@@ -514,13 +505,6 @@ sub _tags_record {
 					['e', 'span'],
 				);
 			}
-		} else {
-			$self->{'tags'}->put(
-				['b', 'div'],
-				['a', 'class', 'param-empty'],
-				['d', decode_utf8('bez parametrů')],
-				['e', 'div'],
-			);
 		}
 		$self->{'tags'}->put(
 			['e', 'div'],

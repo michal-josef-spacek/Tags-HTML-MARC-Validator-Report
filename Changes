@@ -1,6 +1,7 @@
 0.02
  - Add test for constructor.
  - Fix visibility of value like '   '.
+ - Remove empty params string.
  - Update author email.
 
 0.01 2026-10-18T13:32:08+02:00
