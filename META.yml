@@ -18,6 +18,7 @@ meta-spec:
 name: Tags-HTML-MARC-Validator-Report
 no_index:
   directory:
+    - examples
     - inc
     - t
     - xt

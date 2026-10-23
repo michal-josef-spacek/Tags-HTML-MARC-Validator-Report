@@ -537,3 +537,603 @@ sub _html_param_value {
 }
 
 1;
+
+__END__
+
+=pod
+
+=encoding utf8
+
+=head1 NAME
+
+Tags::HTML::MARC::Validator::Report - Tags helper class for MARC validator report presentation.
+
+=head1 SYNOPSIS
+
+ use Tags::HTML::MARC::Validator::Report;
+
+ my $obj = Tags::HTML::MARC::Validator::Report->new(%params);
+ $obj->cleanup;
+ $obj->init($report);
+ $obj->prepare;
+ $obj->process;
+ $obj->process_css;
+
+=head1 METHODS
+
+=head2 C<new>
+
+ my $obj = Tags::HTML::MARC::Validator::Report->new(%params);
+
+Constructor.
+
+=over 8
+
+=item * C<css_class>
+
+CSS class for the report root element.
+
+Default value is 'marc-validator-report'.
+
+=item * C<css>
+
+L<CSS::Struct::Output> object.
+
+Default value is undef.
+
+=item * C<tags>
+
+L<Tags::Output> object.
+
+Default value is undef.
+
+=back
+
+Returns instance of object.
+
+=head2 C<cleanup>
+
+ $obj->cleanup;
+
+Process cleanup after page run and remove the initialized report object.
+
+Returns undef.
+
+=head2 C<init>
+
+ $obj->init($report);
+
+Initialize the component for a page run. Takes a
+L<Data::MARC::Validator::Report> object as C<$report>.
+
+Returns undef.
+
+=head2 C<prepare>
+
+ $obj->prepare;
+
+Process initialization before page run.
+
+It is not used in this module.
+
+Returns undef.
+
+=head2 C<process>
+
+ $obj->process;
+
+Process the initialized MARC validator report into a Tags structure. The
+output is rooted in a C<div> with the configured CSS class and contains report
+statistics, plugin sections, records, and validation issues.
+
+Returns undef.
+
+=head2 C<process_css>
+
+ $obj->process_css;
+
+Process the component CSS into a CSS::Struct structure. Selectors are scoped
+below the configured report CSS class.
+
+Returns undef.
+
+=head1 ERRORS
+
+ new():
+         From Class::Utils::set_params():
+                 Unknown parameter '%s'.
+         From Tags::HTML::new():
+                 Parameter 'css' must be a 'CSS::Struct::Output::*' class.
+                 Parameter 'tags' must be a 'Tags::Output::*' class.
+
+ init():
+         Not valid 'Data::MARC::Validator::Report' object.
+
+ process():
+         From Tags::HTML::process():
+                 Parameter 'tags' isn't defined.
+
+ process_css():
+         From Tags::HTML::process_css():
+                 Parameter 'css' isn't defined.
+
+=head1 EXAMPLE1
+
+=for comment filename=create_validator_report_html.pl
+
+ use strict;
+ use warnings;
+
+ use CSS::Struct::Output::Indent;
+ use Data::MARC::Validator::Report;
+ use Data::MARC::Validator::Report::Error;
+ use Data::MARC::Validator::Report::Plugin;
+ use Data::MARC::Validator::Report::Plugin::Errors;
+ use DateTime;
+ use Tags::HTML::MARC::Validator::Report;
+ use Tags::Output::Indent;
+
+ # Output objects.
+ my $css = CSS::Struct::Output::Indent->new;
+ my $tags = Tags::Output::Indent->new;
+ my $obj = Tags::HTML::MARC::Validator::Report->new(
+         'css' => $css,
+         'tags' => $tags,
+ );
+
+ # Report data.
+ my $report = Data::MARC::Validator::Report->new(
+         'datetime' => DateTime->now,
+         'plugins' => [
+                 Data::MARC::Validator::Report::Plugin->new(
+                         'plugin_errors' => [
+                                 Data::MARC::Validator::Report::Plugin::Errors->new(
+                                         'errors' => [
+                                                 Data::MARC::Validator::Report::Error->new(
+                                                         'error' => 'Error #1',
+                                                         'params' => {
+                                                                 'key' => 'value',
+                                                         },
+                                                 ),
+                                                 Data::MARC::Validator::Report::Error->new(
+                                                         'error' => 'Error #2',
+                                                         'params' => {
+                                                                 'key' => 'value',
+                                                         },
+                                                 ),
+                                         ],
+                                         'filters' => ['filter1', 'filter2'],
+                                         'record_id' => 'id1',
+                                 ),
+                         ],
+                         'module_name' => 'MARC::Validator::Plugin::Foo',
+                         'name' => 'foo',
+                         'version' => '0.01',
+                 ),
+         ],
+ );
+
+ # Process HTML and CSS.
+ $obj->init($report);
+ $obj->process;
+ $obj->process_css;
+
+ print "HTML:\n";
+ print $tags->flush;
+ print "\n\n";
+ print "CSS:\n";
+ print $css->flush;
+
+ # Output:
+ # HTML:
+ # <div class="marc-validator-report">
+ #   <section class="stats">
+ #     <article class="panel stat">
+ #       <strong>
+ #         1
+ #       </strong>
+ #       <span>
+ #         validačních pluginů
+ #       </span>
+ #     </article>
+ #     <article class="panel stat">
+ #       <strong>
+ #         1
+ #       </strong>
+ #       <span>
+ #         pluginů s chybou
+ #       </span>
+ #     </article>
+ #     <article class="panel stat">
+ #       <strong>
+ #         1
+ #       </strong>
+ #       <span>
+ #         zasažených záznamů
+ #       </span>
+ #     </article>
+ #     <article class="panel stat">
+ #       <strong>
+ #         2
+ #       </strong>
+ #       <span>
+ #         celkem chyb
+ #       </span>
+ #     </article>
+ #   </section>
+ #   <section class="content-grid">
+ #     <div class="plugin-list">
+ #       <details class="panel plugin" id="foo" open="open">
+ #         <summary>
+ #           <div>
+ #             <div class="plugin-title">
+ #               <h2>
+ #                 foo
+ #               </h2>
+ #               <span class="badge">
+ #                 2 chyb
+ #               </span>
+ #               <span class="badge">
+ #                 1 záznamů
+ #               </span>
+ #             </div>
+ #             <div class="module">
+ #               MARC::Validator::Plugin::Foo · v0.01 · 2026-10-23T17:10:26
+ #             </div>
+ #           </div>
+ #           <span aria-hidden="true">
+ #             ▾
+ #           </span>
+ #         </summary>
+ #         <div class="records">
+ #           <article class="record" id="record-id1">
+ #             <div class="record-header">
+ #               <span class="record-id">
+ #                 id1
+ #               </span>
+ #               <span class="badge">
+ #                 2×
+ #               </span>
+ #             </div>
+ #             <div class="issues">
+ #               <section class="issue">
+ #                 <div class="issue-title">
+ #                   Error #1
+ #                 </div>
+ #                 <div class="params">
+ #                   <span class="param">
+ #                     <span class="param-key">
+ #                       <b>
+ #                         key
+ #                       </b>
+ #                     </span>
+ #                     <span class="param-separator">
+ #                       :
+ #                     </span>
+ #                     <code class="param-value">
+ #                       <span class="param-value-text">value                      </span>
+ #                     </code>
+ #                   </span>
+ #                 </div>
+ #               </section>
+ #               <section class="issue">
+ #                 <div class="issue-title">
+ #                   Error #2
+ #                 </div>
+ #                 <div class="params">
+ #                   <span class="param">
+ #                     <span class="param-key">
+ #                       <b>
+ #                         key
+ #                       </b>
+ #                     </span>
+ #                     <span class="param-separator">
+ #                       :
+ #                     </span>
+ #                     <code class="param-value">
+ #                       <span class="param-value-text">value                      </span>
+ #                     </code>
+ #                   </span>
+ #                 </div>
+ #               </section>
+ #             </div>
+ #           </article>
+ #         </div>
+ #       </details>
+ #     </div>
+ #   </section>
+ # </div>
+ #
+ # CSS:
+ # .marc-validator-report {
+ # 	--bg: #f6f7fb;
+ # 	--panel: #fff;
+ # 	--text: #172033;
+ # 	--muted: #64748b;
+ # 	--line: #e2e8f0;
+ # 	--accent: #2563eb;
+ # 	--accent-soft: #dbeafe;
+ # 	--danger: #dc2626;
+ # 	--danger-soft: #fee2e2;
+ # 	--ok: #16a34a;
+ # 	--ok-soft: #dcfce7;
+ # 	--shadow: 0 18px 45px rgba(15,23,42,.08);
+ # 	--radius: 18px;
+ # 	font-family: Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+ # 	display: grid;
+ # 	gap: 18px;
+ # 	color: var(--text);
+ # }
+ # .marc-validator-report * {
+ # 	box-sizing: border-box;
+ # }
+ # .marc-validator-report .panel {
+ # 	background: rgba(255,255,255,.88);
+ # 	border: 1px solid rgba(226,232,240,.85);
+ # 	border-radius: var(--radius);
+ # 	box-shadow: var(--shadow);
+ # 	backdrop-filter: blur(10px);
+ # }
+ # .marc-validator-report .stats {
+ # 	display: grid;
+ # 	grid-template-columns: repeat(auto-fit,minmax(180px,1fr));
+ # 	gap: 14px;
+ # }
+ # .marc-validator-report .stat {
+ # 	padding: 18px;
+ # }
+ # .marc-validator-report .stat strong {
+ # 	display: block;
+ # 	font-size: 30px;
+ # 	letter-spacing: -.04em;
+ # }
+ # .marc-validator-report .stat span {
+ # 	color: var(--muted);
+ # 	font-size: 14px;
+ # }
+ # .marc-validator-report .content-grid {
+ # 	display: grid;
+ # 	gap: 18px;
+ # }
+ # .marc-validator-report .plugin-list {
+ # 	display: grid;
+ # 	gap: 14px;
+ # }
+ # .marc-validator-report details.plugin {
+ # 	overflow: hidden;
+ # 	scroll-margin-top: 16px;
+ # }
+ # .marc-validator-report details.plugin summary {
+ # 	list-style: none;
+ # 	display: grid;
+ # 	grid-template-columns: 1fr auto;
+ # 	gap: 12px;
+ # 	align-items: center;
+ # 	padding: 18px;
+ # 	cursor: pointer;
+ # }
+ # .marc-validator-report details.plugin summary::-webkit-details-marker {
+ # 	display: none;
+ # }
+ # .marc-validator-report .plugin-title {
+ # 	display: flex;
+ # 	flex-wrap: wrap;
+ # 	gap: 8px;
+ # 	align-items: baseline;
+ # }
+ # .marc-validator-report .plugin-title h2 {
+ # 	margin: 0;
+ # 	font-size: 20px;
+ # 	letter-spacing: -.02em;
+ # }
+ # .marc-validator-report .module {
+ # 	color: var(--muted);
+ # 	font-size: 13px;
+ # 	font-family: ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+ # }
+ # .marc-validator-report .badge {
+ # 	display: inline-flex;
+ # 	align-items: center;
+ # 	justify-content: center;
+ # 	gap: 6px;
+ # 	min-width: 34px;
+ # 	padding: 5px 9px;
+ # 	border-radius: 999px;
+ # 	font-size: 12px;
+ # 	font-weight: 800;
+ # 	background: var(--danger-soft);
+ # 	color: #991b1b;
+ # }
+ # .marc-validator-report .badge.ok {
+ # 	background: var(--ok-soft);
+ # 	color: #166534;
+ # }
+ # .marc-validator-report .records {
+ # 	border-top: 1px solid var(--line);
+ # 	padding: 0 18px 18px;
+ # 	display: grid;
+ # 	gap: 10px;
+ # }
+ # .marc-validator-report .record {
+ # 	border: 1px solid var(--line);
+ # 	border-radius: 14px;
+ # 	overflow: hidden;
+ # 	background: #fff;
+ # 	scroll-margin-top: 16px;
+ # }
+ # .marc-validator-report .record-header {
+ # 	padding: 12px 14px;
+ # 	display: flex;
+ # 	flex-wrap: wrap;
+ # 	gap: 10px;
+ # 	align-items: center;
+ # 	justify-content: space-between;
+ # 	background: #f8fafc;
+ # 	border-bottom: 1px solid var(--line);
+ # }
+ # .marc-validator-report .record-id {
+ # 	font-family: ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+ # 	font-weight: 800;
+ # }
+ # .marc-validator-report .issues {
+ # 	display: grid;
+ # 	gap: 10px;
+ # 	padding: 12px;
+ # }
+ # .marc-validator-report .issue {
+ # 	display: grid;
+ # 	gap: 7px;
+ # 	padding: 12px;
+ # 	border-radius: 12px;
+ # 	background: #fff;
+ # 	border: 1px solid #eef2f7;
+ # }
+ # .marc-validator-report .issue-title {
+ # 	font-weight: 750;
+ # }
+ # .marc-validator-report .params {
+ # 	display: flex;
+ # 	flex-direction: column;
+ # 	align-items: flex-start;
+ # 	gap: 7px;
+ # }
+ # .marc-validator-report .param {
+ # 	max-width: 100%;
+ # 	display: inline-flex;
+ # 	align-items: center;
+ # 	gap: 4px;
+ # 	font-family: ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+ # 	font-size: 12px;
+ # 	color: #334155;
+ # 	overflow-wrap: anywhere;
+ # }
+ # .marc-validator-report .param-key {
+ # 	border-radius: 10px;
+ # 	background: #f1f5f9;
+ # 	padding: 6px 8px;
+ # }
+ # .marc-validator-report .param-separator {
+ # 	padding: 0 1px;
+ # }
+ # .marc-validator-report .param-value {
+ # 	font-size: 0;
+ # 	display: inline-block;
+ # 	border-radius: 10px;
+ # 	background: #f1f5f9;
+ # 	padding: 6px 8px;
+ # }
+ # .marc-validator-report .param-value-text {
+ # 	font-family: inherit;
+ # 	font-size: 12px;
+ # 	white-space: nowrap;
+ # }
+ # .marc-validator-report .empty {
+ # 	padding: 26px;
+ # 	text-align: center;
+ # 	color: var(--muted);
+ # }
+
+=head1 EXAMPLE2
+
+=for comment filename=plack_app_validator_report.pl
+
+ use strict;
+ use warnings;
+
+ use CSS::Struct::Output::Indent;
+ use Data::MARC::Validator::Report;
+ use Data::MARC::Validator::Report::Error;
+ use Data::MARC::Validator::Report::Plugin;
+ use Data::MARC::Validator::Report::Plugin::Errors;
+ use DateTime;
+ use Plack::App::Tags::HTML;
+ use Plack::Runner;
+ use Tags::Output::Indent;
+
+ # Report data.
+ my $report = Data::MARC::Validator::Report->new(
+         'datetime' => DateTime->now,
+         'plugins' => [
+                 Data::MARC::Validator::Report::Plugin->new(
+                         'plugin_errors' => [
+                                 Data::MARC::Validator::Report::Plugin::Errors->new(
+                                         'errors' => [
+                                                 Data::MARC::Validator::Report::Error->new(
+                                                         'error' => 'Error #1',
+                                                         'params' => {
+                                                                 'key' => 'value',
+                                                         },
+                                                 ),
+                                         ],
+                                         'filters' => ['filter1'],
+                                         'record_id' => 'id1',
+                                 ),
+                         ],
+                         'module_name' => 'MARC::Validator::Plugin::Foo',
+                         'name' => 'foo',
+                         'version' => '0.01',
+                 ),
+         ],
+ );
+
+ # Run application.
+ my $app = Plack::App::Tags::HTML->new(
+         'component' => 'Tags::HTML::MARC::Validator::Report',
+         'css' => CSS::Struct::Output::Indent->new,
+         'data_init' => [$report],
+         'tags' => Tags::Output::Indent->new(
+                 'preserved' => ['style'],
+                 'xml' => 1,
+         ),
+         'title' => 'MARC validator report',
+ )->to_app;
+ Plack::Runner->new->run($app);
+
+ # Run with:
+ # plackup examples/plack_app_validator_report.pl
+ #
+ # The application is then available at http://localhost:5000/.
+
+=head1 DEPENDENCIES
+
+L<Class::Utils>,
+L<Error::Pure>,
+L<Scalar::Util>,
+L<Tags::HTML>,
+L<Unicode::UTF8>.
+
+=head1 SEE ALSO
+
+=over
+
+=item L<Data::MARC::Validator::Report>
+
+Data object consumed by this component.
+
+=item L<Tags::HTML::Image>
+
+Reusable Tags::HTML component with the same rendering lifecycle.
+
+=back
+
+=head1 REPOSITORY
+
+L<https://github.com/michal-josef-spacek/Tags-HTML-MARC-Validator-Report>
+
+=head1 AUTHOR
+
+Michal Josef Špaček L<mailto:michal.josef.spacek@gmail.com>
+
+L<http://skim.cz>
+
+=head1 LICENSE AND COPYRIGHT
+
+© 2025-2026 Michal Josef Špaček
+
+BSD 2-Clause License
+
+=head1 VERSION
+
+0.04
+
+=cut

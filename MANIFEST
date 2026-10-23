@@ -1,4 +1,6 @@
 Changes
+examples/create_validator_report_html.pl
+examples/plack_app_validator_report.pl
 inc/Module/Install.pm
 inc/Module/Install/AuthorRequires.pm
 inc/Module/Install/AuthorTests.pm
